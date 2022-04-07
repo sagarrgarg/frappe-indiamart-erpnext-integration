@@ -1,13 +1,8 @@
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import cint, format_datetime, add_days, today, date_diff, getdate, get_last_day, flt, nowdate
-from frappe import throw, msgprint, _
-from datetime import date
-import re
+from frappe.utils import today
+from frappe import _
 import json
-import traceback
-import urllib
-from urllib.request import urlopen
 import requests
 
 @frappe.whitelist()
@@ -33,7 +28,6 @@ def sync_india_mart_lead(from_date,to_date):
 					msg=_('URL, Mobile, Key mandatory for Indiamart API Call. Please set them and try again.'),
 					title=_('Missing Setting Fields')
 				)
-		# req = 'https://mapi.indiamart.com/wservce/enquiry/listing/GLUSR_MOBILE/'+str(india_mart_setting.mobile_no)+'/GLUSR_MOBILE_KEY/'+str(india_mart_setting.key)+'/Start_Time/'+str(india_mart_setting.from_date)+'/End_Time/'+str(india_mart_setting.to_date)+'/'
 		req = get_request_url(india_mart_setting)
 		res = requests.post(url=req)
 		if res.text:
@@ -42,11 +36,7 @@ def sync_india_mart_lead(from_date,to_date):
 				if not row.get("Error_Message")==None:
 					frappe.throw(row["Error_Message"])
 				else:
-					dump_data = json.dumps(row, indent=4, sort_keys=True, default=str)
-					f = open("/home/frappe/frappe-bench/apps/indiamart_integration/indiamart_integration/jsondat.txt", "a+")
-					f.write(dump_data + '\n -------\n -------\n -------')
 					doc = add_lead(row)
-					# doc=add_lead(row["SENDERNAME"],row["SENDEREMAIL"],row["MOB"],row["SUBJECT"],row["QUERY_ID"])
 					if doc:
 						count += 1
 			if not count == 0:
