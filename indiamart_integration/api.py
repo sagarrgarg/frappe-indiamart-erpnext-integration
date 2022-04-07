@@ -74,7 +74,7 @@ def add_lead(lead_data):
 				doctype="Lead",
 				lead_name=lead_data["SENDERNAME"],
 				email_address=lead_data["SENDEREMAIL"],
-				phone=lead_data["MOB"],
+				phone=lead_data["MOB"][-10:],
 				requirement=lead_data["SUBJECT"],
 				india_mart_id=lead_data["QUERY_ID"],
 				source="India Mart"           
