@@ -1,9 +1,11 @@
 {
+ "actions": [],
  "creation": "2021-04-17 22:16:33.438309",
  "doctype": "DocType",
  "document_type": "Setup",
  "engine": "InnoDB",
  "field_order": [
+  "enabled",
   "section_break_1",
   "url",
   "key",
@@ -66,10 +68,17 @@
    "fieldname": "to_date",
    "fieldtype": "Date",
    "label": "To Date"
+  },
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
   }
  ],
  "issingle": 1,
- "modified": "2021-04-17 22:16:33.438309",
+ "links": [],
+ "modified": "2022-04-08 01:23:35.317214",
  "modified_by": "Administrator",
  "module": "Indiamart Integration",
  "name": "IndiaMart Setting",
