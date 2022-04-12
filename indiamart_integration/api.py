@@ -7,15 +7,17 @@ import requests
 
 @frappe.whitelist()
 def add_source_lead():
-	if not frappe.db.exists("Lead Source","India Mart"):
-		doc=frappe.get_doc(dict(
-			doctype = "Lead Source",
-			source_name = "India Mart"
-		)).insert(ignore_permissions=True)
+	lead_sources = ['Indiamart - Call', 'Indiamart - Buy Lead','Indiamart - Direct' ]
+	for type in lead_sources:
+		if not frappe.db.exists(type):
+			doc=frappe.get_doc(dict(
+				doctype = "Lead Source",
+				source_name = type
+			)).insert(ignore_permissions=True)
 		if doc:
-			frappe.msgprint(_("Lead Source Added For India Mart"))
-	else:
-		frappe.msgprint(_("India Mart Lead Source Already Available"))
+			frappe.msgprint(_("Lead Source Added For " + type))
+		else:
+			frappe.msgprint(_(type + " Lead Source Already Available"))
 
 @frappe.whitelist()
 def sync_india_mart_lead(from_date,to_date):
@@ -36,7 +38,8 @@ def sync_india_mart_lead(from_date,to_date):
 				if not row.get("Error_Message")==None:
 					frappe.throw(row["Error_Message"])
 				else:
-					doc = add_lead(row)
+					row_data = {k: v if v is not None else '' for k, v in row.items()}
+					doc = add_lead(row_data)
 					if doc:
 						count += 1
 			if not count == 0:
@@ -61,32 +64,24 @@ def cron_sync_lead():
 
 @frappe.whitelist()
 def add_lead(lead_data):
-	qtype_map = {'P' : 'Indiamart – Call', 'B' : 'Indiamart – Buy Lead', 'W' : 'Indiamart – Direct'}
+	qtype_map = {'P' : 'Indiamart - Call', 'B' : 'Indiamart - Buy Lead', 'W' : 'Indiamart - Direct'}
 	try:
 		if not frappe.db.exists("Lead",{"india_mart_id":lead_data["QUERY_ID"]}):
 			doc = frappe.get_doc(dict(
-				# doctype="Lead",
-				# title = lead_data['GLUSR_USR_COMPANYNAME'] if lead_data['GLUSR_USR_COMPANYNAME'] else lead_data['SENDERNAME'],
-				# lead_name = lead_data["SENDERNAME"],
-				# email_id = lead_data["SENDEREMAIL"],
-				# mobile_no = lead_data["MOB"][-10:],
-				# company_name = lead_data['GLUSR_USR_COMPANYNAME'],
-				# address_line1 = lead_data['ENQ_ADDRESS'],
-				# city = lead_data['ENQ_CITY'],
-				# state = lead_data['ENQ_STATE'],
-				# notes = lead_data['ENQ_MESSAGE'] + '\n' + lead_data['PRODUCT_NAME'] + '\n' + lead_data['ENQ_CALL_DURATION'] + '\n' + lead_data['ENQ_RECEIVER_MOB'] + '\n' + lead_data['EMAIL_ALT'] + '\n' + lead_data['QUERY_ID'],
-				# phone = lead_data['MOBILE_ALT'],
-				# status = 'Lead',
-				# source = qtype_map[lead_data["QTYPE"]]
-				
 				doctype="Lead",
-				lead_name=lead_data["SENDERNAME"],
-				email_address=lead_data["SENDEREMAIL"],
-				phone=lead_data["MOB"][-10:],
-				requirement=lead_data["SUBJECT"],
-				india_mart_id=lead_data["QUERY_ID"],
-				source="India Mart" 
-				          
+				title = lead_data['GLUSR_USR_COMPANYNAME'] if lead_data['GLUSR_USR_COMPANYNAME'] else lead_data['SENDERNAME'],
+				lead_name = lead_data.get("SENDERNAME"),
+				email_id = lead_data.get("SENDEREMAIL"),
+				mobile_no = lead_data.get("MOB")[-10:],
+				company_name = lead_data.get('GLUSR_USR_COMPANYNAME'),
+				address_line1 = lead_data.get('ENQ_ADDRESS'),
+				city = lead_data.get('ENQ_CITY'),
+				state = lead_data.get('ENQ_STATE'),
+				notes = lead_data['ENQ_MESSAGE'] + '\n' + lead_data['PRODUCT_NAME'] + '\n' + lead_data['ENQ_CALL_DURATION'] + '\n' + lead_data['ENQ_RECEIVER_MOB'] + '\n' + lead_data['EMAIL_ALT'] + '\n' + lead_data['QUERY_ID'],
+				phone = lead_data.get('MOBILE_ALT')[-10:],
+				status = 'Lead',
+				source = qtype_map[lead_data.get("QTYPE","W")],
+				india_mart_id=lead_data.get("QUERY_ID")
 			)).insert(ignore_permissions = True)
 			return doc
 	except Exception as e:
