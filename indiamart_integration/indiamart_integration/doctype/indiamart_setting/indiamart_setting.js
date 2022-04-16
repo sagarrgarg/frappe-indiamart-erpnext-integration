@@ -44,7 +44,7 @@ frappe.ui.form.on('IndiaMart Setting', {
 		if(frm.doc.from_date && frm.doc.to_date){
 		frappe.call({
 			method:"indiamart_integration.api.sync_india_mart_lead",
-			args:{"from_date":frm.doc.from_date,"to_date":frm.doc.to_date},
+			args:{"from_date":frm.doc.from_date,"to_date":frm.doc.to_date, "from_cron" : 0},
 			freeze:true,
 			freeze_message:"Please Wait . .",
 			callback:function(r){

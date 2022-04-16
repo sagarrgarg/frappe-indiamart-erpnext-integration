@@ -20,26 +20,29 @@ def add_source_lead():
 			frappe.msgprint(_(type + " Lead Source Already Available"))
 
 @frappe.whitelist()
-def sync_india_mart_lead(from_date,to_date):
+def sync_india_mart_lead(from_cron, from_date = None, to_date = None):
 	try:
 		india_mart_setting = frappe.get_doc("IndiaMart Setting","IndiaMart Setting")
 		if (not india_mart_setting.url
-			or not india_mart_setting.mobile_no
 			or not india_mart_setting.key):
 				frappe.throw(
-					msg=_('URL, Mobile, Key mandatory for Indiamart API Call. Please set them and try again.'),
+					msg=_('URL, Key mandatory for Indiamart API Call. Please set them and try again.'),
 					title=_('Missing Setting Fields')
 				)
-		req = get_request_url(india_mart_setting)
+
+		if from_cron == 0:
+			req = get_request_url(india_mart_setting)
+		elif from_cron == 1:
+			req = get_request_url_cron(india_mart_setting)
 		res = requests.post(url=req)
 		if res.text:
 			count = 0
-			for row in json.loads(res.text):
-				if not row.get("Error_Message")==None:
-					frappe.throw(row["Error_Message"])
-				else:
-					row_data = {k: v if v is not None else '' for k, v in row.items()}
-					doc = add_lead(row_data)
+			_data = json.loads(res.text)
+			if not _data['STATUS'] == 'SUCCESS':
+				frappe.throw(_data['MESSAGE'])
+			else:
+				for row in _data['RESPONSE']:
+					doc = add_lead(row)
 					if doc:
 						count += 1
 			if not count == 0:
@@ -49,7 +52,11 @@ def sync_india_mart_lead(from_date,to_date):
 		frappe.log_error(frappe.get_traceback(), _("India Mart Sync Error"))
 
 def get_request_url(india_mart_setting):
-	req = str(india_mart_setting.url)+str(india_mart_setting.mobile_no)+'/GLUSR_MOBILE_KEY/'+str(india_mart_setting.key)+'/Start_Time/'+str(india_mart_setting.from_date)+'/End_Time/'+str(india_mart_setting.to_date)+'/'
+	req = str(india_mart_setting.url)+str(india_mart_setting.key)+'&start_time='+str(india_mart_setting.from_date)+'&end_time='+str(india_mart_setting.to_date)
+	return req
+
+def get_request_url_cron(india_mart_setting):
+	req = str(india_mart_setting.url)+str(india_mart_setting.key)
 	return req
 
 @frappe.whitelist()
@@ -58,7 +65,7 @@ def cron_sync_lead():
 	if not india_mart_setting.enabled:
 		return
 	try:
-		sync_india_mart_lead(today(),today())
+		sync_india_mart_lead(from_cron = 1)
 	except Exception as e:
 		frappe.log_error(frappe.get_traceback(), _("India Mart Sync Error"))
 
@@ -66,22 +73,22 @@ def cron_sync_lead():
 def add_lead(lead_data):
 	qtype_map = {'P' : 'Indiamart - Call', 'B' : 'Indiamart - Buy Lead', 'W' : 'Indiamart - Direct'}
 	try:
-		if not frappe.db.exists("Lead",{"india_mart_id":lead_data["QUERY_ID"]}):
+		if not frappe.db.exists("Lead",{"india_mart_id":lead_data["UNIQUE_QUERY_ID"]}):
 			doc = frappe.get_doc(dict(
 				doctype="Lead",
-				title = lead_data['GLUSR_USR_COMPANYNAME'] if lead_data['GLUSR_USR_COMPANYNAME'] else lead_data['SENDERNAME'],
-				lead_name = lead_data.get("SENDERNAME"),
-				email_id = lead_data.get("SENDEREMAIL"),
-				mobile_no = lead_data.get("MOB")[-10:],
-				company_name = lead_data.get('GLUSR_USR_COMPANYNAME'),
-				address_line1 = lead_data.get('ENQ_ADDRESS'),
-				city = lead_data.get('ENQ_CITY'),
-				state = lead_data.get('ENQ_STATE'),
-				notes = lead_data['ENQ_MESSAGE'] + '\n' + lead_data['PRODUCT_NAME'] + '\n' + lead_data['ENQ_CALL_DURATION'] + '\n' + lead_data['ENQ_RECEIVER_MOB'] + '\n' + lead_data['EMAIL_ALT'] + '\n' + lead_data['QUERY_ID'],
-				phone = lead_data.get('MOBILE_ALT')[-10:],
+				title = lead_data['SENDER_COMPANY'] if lead_data['SENDER_COMPANY'] else lead_data['SENDER_NAME'], #OK
+				lead_name = lead_data.get("SENDER_NAME"), #ok
+				email_id = lead_data.get("SENDER_EMAIL"), #ok
+				mobile_no = lead_data.get("SENDER_MOBILE")[-10:], #ok
+				company_name = lead_data.get('SENDER_COMPANY'), #ok
+				address_line1 = lead_data.get('SENDER_ADDRESS'), #ok
+				city = lead_data.get('SENDER_CITY'), #ok
+				state = lead_data.get('SENDER_STATE'), #ok
+				notes = lead_data['QUERY_MESSAGE'] + '\n' + lead_data['QUERY_PRODUCT_NAME'] + '\n' + lead_data['CALL_DURATION'] + '\n' + lead_data['RECEIVER_MOBILE'] + '\n' + lead_data['SENDER_EMAIL_ALT'] + '\n' + lead_data['UNIQUE_QUERY_ID'],
+				phone = lead_data.get('SENDER_MOBILE_ALT')[-10:], #ok
 				status = 'Lead',
-				source = qtype_map[lead_data.get("QTYPE","W")],
-				india_mart_id=lead_data.get("QUERY_ID")
+				source = qtype_map[lead_data.get("QUERY_TYPE","W")],
+				india_mart_id=lead_data.get("UNIQUE_QUERY_ID")
 			)).insert(ignore_permissions = True)
 			return doc
 	except Exception as e:
