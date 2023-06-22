@@ -35,7 +35,9 @@ def sync_india_mart_lead(from_cron, from_date = None, to_date = None):
 		# else:
 		# 	req = get_request_url(india_mart_setting)
 		req = get_request_url_cron(india_mart_setting)
-		res = requests.post(url=req)
+		frappe.log(req)
+		res = requests.get(url=req)
+		frappe.log(res.text)
 		if res.text:
 			count = 0
 			_data = json.loads(res.text)
