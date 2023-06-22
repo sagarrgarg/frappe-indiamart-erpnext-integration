@@ -30,10 +30,11 @@ def sync_india_mart_lead(from_cron, from_date = None, to_date = None):
 					title=_('Missing Setting Fields')
 				)
 
-		if from_cron == 1:
-			req = get_request_url_cron(india_mart_setting)
-		else:
-			req = get_request_url(india_mart_setting)
+		# if from_cron == 1:
+		# 	req = get_request_url_cron(india_mart_setting)
+		# else:
+		# 	req = get_request_url(india_mart_setting)
+		req = get_request_url_cron(india_mart_setting)
 		res = requests.post(url=req)
 		if res.text:
 			count = 0
