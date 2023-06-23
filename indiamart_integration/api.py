@@ -73,7 +73,6 @@ def cron_sync_lead():
 
 @frappe.whitelist()
 def add_lead(lead_data):
-	frappe.log_error(lead_data)
 	qtype_map = {'P' : 'Indiamart - Call', 'B' : 'Indiamart - Buy Lead', 'W' : 'Indiamart - Direct'}
 	try:
 		if not (frappe.db.exists("Lead",{"india_mart_id":lead_data["UNIQUE_QUERY_ID"]}) or frappe.db.exists("Lead",{"email_id":lead_data["SENDER_EMAIL"]})):
