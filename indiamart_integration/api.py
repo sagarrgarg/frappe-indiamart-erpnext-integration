@@ -74,28 +74,32 @@ def cron_sync_lead():
 @frappe.whitelist()
 def add_lead(lead_data):
 	frappe.log_error(lead_data)
-	# qtype_map = {'P' : 'Indiamart - Call', 'B' : 'Indiamart - Buy Lead', 'W' : 'Indiamart - Direct'}
-	# try:
-	# 	if not frappe.db.exists("Lead",{"india_mart_id":lead_data["UNIQUE_QUERY_ID"]}):
-	# 		doc = frappe.get_doc(dict(
-	# 			doctype="Lead",
-	# 			title = lead_data.get('SENDER_COMPANY') if lead_data.get('SENDER_COMPANY') else lead_data.get('SENDER_NAME'), #OK
-	# 			lead_name = lead_data.get("SENDER_NAME"), #ok
-	# 			email_id = lead_data.get("SENDER_EMAIL"), #ok
-	# 			mobile_no = lead_data.get("SENDER_MOBILE")[-10:], #ok
-	# 			company_name = lead_data.get('SENDER_COMPANY'), #ok
-	# 			address_line1 = lead_data.get('SENDER_ADDRESS'), #ok
-	# 			city = lead_data.get('SENDER_CITY'), #ok
-	# 			state = lead_data.get('SENDER_STATE'), #ok
-	# 			notes = lead_data.get('QUERY_MESSAGE') + '\n' + lead_data.get('QUERY_PRODUCT_NAME') + '\n' + lead_data.get('CALL_DURATION') + '\n' + lead_data.get('RECEIVER_MOBILE') + '\n' + lead_data.get('SENDER_EMAIL_ALT') + '\n' + lead_data.get('UNIQUE_QUERY_ID'),
-	# 			phone = lead_data.get('SENDER_MOBILE_ALT')[-10:], #ok
-	# 			status = 'Lead',
-	# 			source = qtype_map[lead_data.get("QUERY_TYPE","W")],
-	# 			india_mart_id=lead_data.get("UNIQUE_QUERY_ID")
-	# 		)).insert(ignore_permissions = True)
-	# 		return doc
-	# except Exception as e:
-	# 	frappe.log_error(frappe.get_traceback())
+	qtype_map = {'P' : 'Indiamart - Call', 'B' : 'Indiamart - Buy Lead', 'W' : 'Indiamart - Direct'}
+	try:
+	        if not (frappe.db.exists("Lead",{"india_mart_id":lead_data["UNIQUE_QUERY_ID"]}) or frappe.db.exists("Lead",{"email_id":lead_data["SENDER_EMAIL"]})):
+	            doc = frappe.get_doc({
+	            	'doctype' : "Lead",
+	            	'title' : lead_data.get('SENDER_COMPANY') if lead_data.get('SENDER_COMPANY') else lead_data.get('SENDER_NAME'), #OK
+	            	'lead_name' : lead_data.get("SENDER_NAME"), #ok
+	            	'email_id' : lead_data.get("SENDER_EMAIL"), #ok
+	            	'mobile_no' : lead_data.get("SENDER_MOBILE")[-10:], #ok
+	            	'company_name' : lead_data.get('SENDER_COMPANY'), #ok
+	            	'address_line1' : lead_data.get('SENDER_ADDRESS'), #ok
+	            	'city' : lead_data.get('SENDER_CITY'), #ok
+	            	'state' : lead_data.get('SENDER_STATE'), #ok
+	            	'notes' : [
+	            	    {
+	                        'note' : lead_data.get('QUERY_MESSAGE') + "\n" + lead_data.get('QUERY_PRODUCT_NAME') + "\n" + lead_data.get('CALL_DURATION') + "\n" + lead_data.get('RECEIVER_MOBILE') + "\n" + lead_data.get('SENDER_EMAIL_ALT') + "\n" + lead_data.get('UNIQUE_QUERY_ID'),
+	            	    }
+	            	    ],
+	            	'phone' : lead_data.get('SENDER_MOBILE_ALT')[-10:], #ok
+	            	'status' : 'Lead',
+	            	'source' : qtype_map[lead_data.get("QUERY_TYPE")],
+	            	'india_mart_id':lead_data.get("UNIQUE_QUERY_ID")
+	            }).insert(ignore_permissions = True)
+			return doc
+	except Exception as e:
+		frappe.log_error(frappe.get_traceback())
 
 
 
