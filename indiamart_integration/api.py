@@ -82,6 +82,8 @@ def add_lead(lead_data):
 				'doctype' : "Lead",
 				'title' : title,
 				'lead_name' : lead_name,
+				'first_name' : lead_name.split(" ")[0] if " " in lead_name else "",
+				'last_name' : lead_name.split(" ")[1] if " " in lead_name else "",
 				'email_id' : email_id,
 				'mobile_no' : mobile_no,
 				'company_name' : company_name, #ok
