@@ -77,6 +77,7 @@ def add_lead(lead_data):
 	qtype_map = {'P' : 'Indiamart - Call', 'B' : 'Indiamart - Buy Lead', 'W' : 'Indiamart - Direct'}
 	try:
 		if not (frappe.db.exists("Lead",{"india_mart_id":lead_data["UNIQUE_QUERY_ID"]}) or frappe.db.exists("Lead",{"email_id":lead_data["SENDER_EMAIL"]})):
+			lead_data = dict(lead_data)
 			doc = frappe.get_doc({
 				'doctype' : "Lead",
 				'title' : lead_data.get('SENDER_COMPANY') if lead_data.get('SENDER_COMPANY') else lead_data.get('SENDER_NAME'), #OK
