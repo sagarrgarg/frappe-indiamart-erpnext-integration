@@ -11,8 +11,8 @@ We added manually pull data option in 'Indiamart Setting' Page.
 
 Setup step:
 1. get your key from indiamart portal and set into indiamart setting page.
-2. mobile number should be that which is registered with indiamart.
-3. email id registered at indiamart.
+2. add url which will be either this - https://mapi.indiamart.com/wservce/crm/crmListing/v2/ or new given by Indiamart
+3. Enable the Indiamart Module
 
 
 #### License

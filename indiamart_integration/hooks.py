@@ -4,11 +4,11 @@ from . import __version__ as app_version
 
 app_name = "indiamart_integration"
 app_title = "Indiamart Integration"
-app_publisher = "Bhavesh Maheshwari"
+app_publisher = "Sagar Ratan Garg"
 app_description = "Indiamart Integration"
 app_icon = "octicon octicon-file-directory"
 app_color = "grey"
-app_email = "maheshwaribhavesh95863@gmail.com"
+app_email = "sagar1ratan1garg1@gmail.com"
 app_license = "MIT"
 
 # Includes in <head>
