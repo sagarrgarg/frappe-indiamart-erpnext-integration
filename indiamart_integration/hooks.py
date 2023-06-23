@@ -109,7 +109,7 @@ app_license = "MIT"
 # }
 scheduler_events = {
 	"cron": {
-       		"0/10 * * * *": [
+       		"*/30 * * * *": [
             		"indiamart_integration.api.cron_sync_lead"
         		]
 		}
