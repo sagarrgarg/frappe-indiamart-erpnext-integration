@@ -78,22 +78,23 @@ def add_lead(lead_data):
 	try:
 		if not (frappe.db.exists("Lead",{"india_mart_id":lead_data["UNIQUE_QUERY_ID"]}) or frappe.db.exists("Lead",{"email_id":lead_data["SENDER_EMAIL"]})):
 			lead_data = dict(lead_data)
+			title,lead_name,email_id,mobile_no,company_name,address_line1,city,state,note,phone = [lead_data.get('SENDER_COMPANY') if lead_data.get('SENDER_COMPANY') else lead_data.get('SENDER_NAME'),lead_data.get("SENDER_NAME"),lead_data.get("SENDER_EMAIL"),lead_data.get("SENDER_MOBILE")[-10:],lead_data.get('SENDER_COMPANY'),lead_data.get('SENDER_ADDRESS'),lead_data.get('SENDER_CITY'),lead_data.get('SENDER_STATE'),lead_data.get('QUERY_MESSAGE') + "\n" + lead_data.get('QUERY_PRODUCT_NAME') + "\n" + lead_data.get('CALL_DURATION') + "\n" + lead_data.get('RECEIVER_MOBILE') + "\n" + lead_data.get('SENDER_EMAIL_ALT') + "\n" + lead_data.get('UNIQUE_QUERY_ID'),lead_data.get('SENDER_MOBILE_ALT')[-10:]]
 			doc = frappe.get_doc({
 				'doctype' : "Lead",
-				'title' : lead_data.get('SENDER_COMPANY') if lead_data.get('SENDER_COMPANY') else lead_data.get('SENDER_NAME'), #OK
-				'lead_name' : lead_data.get("SENDER_NAME"), #ok
-				'email_id' : lead_data.get("SENDER_EMAIL"), #ok
-				'mobile_no' : lead_data.get("SENDER_MOBILE")[-10:], #ok
-				'company_name' : lead_data.get('SENDER_COMPANY'), #ok
-				'address_line1' : lead_data.get('SENDER_ADDRESS'), #ok
-				'city' : lead_data.get('SENDER_CITY'), #ok
-				'state' : lead_data.get('SENDER_STATE'), #ok
+				'title' : title,
+				'lead_name' : lead_name,
+				'email_id' : email_id,
+				'mobile_no' : mobile_no,
+				'company_name' : company_name, #ok
+				'address_line1' : address_line1, #ok
+				'city' : city, #ok
+				'state' : state, #ok
 				'notes' : [
 					{
-						'note' : lead_data.get('QUERY_MESSAGE') + "\n" + lead_data.get('QUERY_PRODUCT_NAME') + "\n" + lead_data.get('CALL_DURATION') + "\n" + lead_data.get('RECEIVER_MOBILE') + "\n" + lead_data.get('SENDER_EMAIL_ALT') + "\n" + lead_data.get('UNIQUE_QUERY_ID'),
+						'note' : note,
 					}
 					],
-				'phone' : lead_data.get('SENDER_MOBILE_ALT')[-10:], #ok
+				'phone' : phone,
 				'status' : 'Lead',
 				'source' : qtype_map[lead_data.get("QUERY_TYPE")],
 				'india_mart_id':lead_data.get("UNIQUE_QUERY_ID")
@@ -101,6 +102,4 @@ def add_lead(lead_data):
 			return doc
 	except Exception as e:
 		frappe.log_error(frappe.get_traceback())
-
-
 
